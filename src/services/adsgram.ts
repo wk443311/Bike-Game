@@ -6,7 +6,7 @@ const RAW_BLOCK_ID = (import.meta.env.VITE_ADSGRAM_BLOCK_ID as string) || '';
 export const ADSGRAM_BLOCK_ID: string =
   /^int-\d+$/.test(RAW_BLOCK_ID) || /^\d+$/.test(RAW_BLOCK_ID)
     ? RAW_BLOCK_ID
-    : 'int-4856';
+    : 'int-55569';
 
 export interface AdsgramRewardResponse {
   success: boolean;
