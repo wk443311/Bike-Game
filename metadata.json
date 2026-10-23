@@ -1,0 +1,6 @@
+{
+  "name": "Moto Rush 20 - Telegram Bike Arcade",
+  "description": "High-octane mobile-first motorcycle arcade game for Telegram with 20 distinct playable levels, responsive touch controls, and policy-compliant Adsgram Rewarded Ads continue feature.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
