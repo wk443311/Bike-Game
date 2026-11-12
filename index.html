@@ -1,24 +1,328 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Moto Rush 20 - Telegram Bike Arcade</title>
-    <meta name="description" content="High-octane mobile-first motorcycle arcade game for Telegram with 20 distinct playable levels, responsive touch controls, and policy-compliant Adsgram Rewarded Ads continue feature." />
-    <meta property="og:title" content="Moto Rush 20 - Telegram Bike Arcade" />
-    <meta property="og:description" content="High-octane mobile-first motorcycle arcade game for Telegram with 20 distinct playable levels, responsive touch controls, and policy-compliant Adsgram Rewarded Ads continue feature." />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="theme-color" content="#090d16" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediaHub - Fast Video Cloud</title>
+  
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-    <!-- Telegram Mini App WebApp SDK -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Adsgram Official SDK -->
+  <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 
-    <!-- Adsgram Rewarded Ads SDK -->
-    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
-  </head>
-  <body class="bg-slate-950 text-white select-none overflow-hidden touch-none" data-state="title">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+
+  <!-- ================= NAVBAR ================= -->
+  <header class="border-b border-slate-800 bg-slate-900/90 sticky top-0 z-30 px-6 py-4 flex justify-between items-center backdrop-blur">
+    <div class="flex items-center gap-3">
+      <div class="h-8 w-8 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/30">
+        ▶
+      </div>
+      <div>
+        <h1 class="text-lg font-black tracking-wider text-white">MEDIA<span class="text-indigo-400">HUB</span></h1>
+        <p class="text-[11px] text-slate-400">High Speed Cloud Storage</p>
+      </div>
+    </div>
+
+    <div class="text-xs text-slate-400 bg-slate-800/60 border border-slate-700/60 px-3 py-1.5 rounded-full">
+      Library: <span id="itemCount" class="text-indigo-400 font-semibold">5</span> Files
+    </div>
+  </header>
+
+  <!-- ================= MAIN VIDEO GRID ================= -->
+  <main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full">
+    <div id="videoGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- 5 Cards render here in order: 1. Thumbnail -> 2. Title -> 3. Download Button -->
+    </div>
+  </main>
+
+  <!-- ================= EDIT MODAL ================= -->
+  <div id="editModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl">
+      <div class="flex justify-between items-center mb-5">
+        <h2 class="text-base font-bold text-white">Edit Media Details</h2>
+        <button onclick="closeEditModal()" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+      </div>
+
+      <form id="videoForm" class="space-y-4">
+        <input type="hidden" id="formId">
+
+        <!-- 1. Thumbnail URL -->
+        <div>
+          <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Thumbnail Image URL</label>
+          <input type="url" id="formThumbnail" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-indigo-500 focus:outline-none" placeholder="https://example.com/image.jpg" required oninput="previewThumbnail(this.value)">
+          <div class="mt-2 h-28 w-full bg-slate-950 rounded-lg border border-slate-800 overflow-hidden flex items-center justify-center">
+            <img id="thumbPreview" src="" alt="Thumbnail preview" class="w-full h-full object-cover hidden">
+            <span id="noPreviewText" class="text-xs text-slate-600">Thumbnail Preview</span>
+          </div>
+        </div>
+
+        <!-- 2. Video Title -->
+        <div>
+          <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Video Title</label>
+          <input type="text" id="formTitle" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-indigo-500 focus:outline-none" placeholder="Video Title" required>
+        </div>
+
+        <!-- 3. Gateway Link -->
+        <div>
+          <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Server Gateway / CDN Mirror</label>
+          <input type="url" id="formGatewayUrl" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-indigo-500 focus:outline-none" placeholder="https://external-gateway.com" required>
+        </div>
+
+        <!-- 4. Direct File URL -->
+        <div>
+          <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Direct Media File (Video Source)</label>
+          <input type="url" id="formDownloadUrl" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-indigo-500 focus:outline-none" placeholder="https://domain.com/video.mp4" required>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-sm bg-slate-800 hover:bg-slate-700 rounded-lg">Cancel</button>
+          <button type="submit" class="px-5 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 font-medium rounded-lg">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= SCRIPT & ADS LOGIC ================= -->
+  <script>
+    /* ==========================================================
+       RANDOM TARGET LINKS POOL (Triggered on Download)
+       ========================================================== */
+    const TARGET_LINKS = [
+      "https://auctionr.org/4/110abe83a2938c0a9a850051443455d9",
+      "https://auctionr.org/4/4b5b863ee584d2aa79fd144089d8117e",
+      "https://auctionr.org/4/d4e1607a948995f2b44623fcdccb1aca",
+      "https://uplcm.com/4/9809285",
+      "https://uplcm.com/4/9722283",
+      "https://uplcm.com/4/9722284"
+    ];
+
+    function getRandomTargetLink() {
+      const index = Math.floor(Math.random() * TARGET_LINKS.length);
+      return TARGET_LINKS[index];
+    }
+
+    /* ==========================================================
+       ADSGRAM INITIALIZATION (Block: int-24780)
+       ========================================================== */
+    const ADSGRAM_BLOCK_ID = "int-55569";
+    let adController = null;
+    let autoAdShown = false;
+
+    function initAdsgram() {
+      if (window.Adsgram) {
+        adController = window.Adsgram.init({ 
+          blockId: ADSGRAM_BLOCK_ID,
+          debug: false 
+        });
+        triggerAutomaticAd();
+      } else {
+        setTimeout(initAdsgram, 300);
+      }
+    }
+
+    function triggerAutomaticAd() {
+      if (!adController || autoAdShown) return;
+
+      adController.show()
+        .then(() => {
+          autoAdShown = true;
+        })
+        .catch(() => {
+          const fireOnFirstTouch = () => {
+            if (!autoAdShown && adController) {
+              adController.show().then(() => { autoAdShown = true; }).catch(() => {});
+            }
+            window.removeEventListener('click', fireOnFirstTouch);
+            window.removeEventListener('touchstart', fireOnFirstTouch);
+          };
+          window.addEventListener('click', fireOnFirstTouch);
+          window.addEventListener('touchstart', fireOnFirstTouch);
+        });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initAdsgram();
+      renderVideos();
+    });
+
+    /* ==========================================================
+       5 CONTENT ITEMS (Provided Thumbnails & Bangla Titles)
+       ========================================================== */
+    const DEFAULT_VIDEOS = [
+      {
+        id: "vid-01",
+        thumbnail: "https://i.ibb.co.com/jk8f32gP/1779124026104.jpg",
+        title: "ভিডিও-১",
+        gatewayUrl: TARGET_LINKS[0],
+        downloadUrl: "https://www.w3schools.com/html/mov_bbb.mp4"
+      },
+      {
+        id: "vid-02",
+        thumbnail: "https://i.ibb.co.com/DfNDddF6/1775025414376.jpg",
+        title: "ভিডিও-২",
+        gatewayUrl: TARGET_LINKS[1],
+        downloadUrl: "https://www.w3schools.com/html/mov_bbb.mp4"
+      },
+      {
+        id: "vid-03",
+        thumbnail: "https://i.ibb.co.com/fZxNrNn/IMG-20261028-234755-312.jpg",
+        title: "ভিডিও-৩",
+        gatewayUrl: TARGET_LINKS[2],
+        downloadUrl: "https://www.w3schools.com/html/mov_bbb.mp4"
+      },
+      {
+        id: "vid-04",
+        thumbnail: "https://i.ibb.co.com/1wMd9Ht/IMG-20261028-234759-940.jpg",
+        title: "ভিডিও-৪",
+        gatewayUrl: TARGET_LINKS[3],
+        downloadUrl: "https://www.w3schools.com/html/mov_bbb.mp4"
+      },
+      {
+        id: "vid-05",
+        thumbnail: "https://i.ibb.co.com/1kvSygN/1779251863558.png",
+        title: "ভিডিও-৫",
+        gatewayUrl: TARGET_LINKS[4],
+        downloadUrl: "https://www.w3schools.com/html/mov_bbb.mp4"
+      }
+    ];
+
+    let videos = JSON.parse(localStorage.getItem('mediahub_demo_v7_final')) || DEFAULT_VIDEOS;
+
+    function saveToStorage() {
+      localStorage.setItem('mediahub_demo_v7_final', JSON.stringify(videos));
+    }
+
+    // STRICT ORDER: 1. Thumbnail -> 2. Title -> 3. Download Button
+    function renderVideos() {
+      const grid = document.getElementById('videoGrid');
+      grid.innerHTML = '';
+      document.getElementById('itemCount').innerText = videos.length;
+
+      videos.forEach(video => {
+        const card = document.createElement('div');
+        card.className = "bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col justify-between shadow-lg hover:border-slate-700 transition";
+
+        card.innerHTML = `
+          <!-- 1. THUMBNAIL (TOP) with Hover Edit Button -->
+          <div class="relative w-full h-48 bg-slate-800 overflow-hidden group">
+            <img 
+              src="${video.thumbnail}" 
+              alt="${video.title}" 
+              class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              onerror="this.src='https://placehold.co/600x400/1e293b/94a3b8?text=Preview+Unavailable'"
+            />
+            
+            <button 
+              onclick="openEditModal('${video.id}')"
+              class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute top-2 right-2 bg-slate-950/80 hover:bg-slate-900 text-xs border border-slate-700 px-2.5 py-1 rounded shadow text-indigo-300 flex items-center gap-1 backdrop-blur"
+              title="Edit thumbnail or link"
+            >
+              ✏️ Edit
+            </button>
+          </div>
+
+          <div class="p-4 flex flex-col flex-1 justify-between">
+            <!-- 2. TITLE (MIDDLE) -->
+            <h3 class="font-semibold text-base text-slate-100 line-clamp-2 mb-4 leading-snug" title="${video.title}">
+              ${video.title}
+            </h3>
+
+            <!-- 3. DOWNLOAD BUTTON (BOTTOM) -->
+            <div>
+              <button 
+                onclick="handleDownload('${video.id}')"
+                class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition active:scale-[0.98] shadow-md shadow-indigo-600/20"
+              >
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download
+              </button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Handles the random link redirect & media file download
+    function handleDownload(id) {
+      const video = videos.find(v => v.id === id);
+      if (!video) return;
+
+      // 1. Adsgram call
+      if (adController) {
+        adController.show().catch(() => {});
+      }
+
+      // 2. Pick a random link from your list and open it in a new tab
+      const randomLink = getRandomTargetLink();
+      window.open(randomLink, '_blank', 'noopener,noreferrer');
+
+      // 3. Trigger the direct video download
+      const link = document.createElement('a');
+      link.href = video.downloadUrl;
+      link.download = video.title.replace(/[^a-zA-Z0-9]/g, '_') + '.mp4';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+
+    // Modal Handling
+    function previewThumbnail(url) {
+      const img = document.getElementById('thumbPreview');
+      const text = document.getElementById('noPreviewText');
+      if (url) {
+        img.src = url;
+        img.classList.remove('hidden');
+        text.classList.add('hidden');
+      } else {
+        img.classList.add('hidden');
+        text.classList.remove('hidden');
+      }
+    }
+
+    function openEditModal(id) {
+      const video = videos.find(v => v.id === id);
+      if (!video) return;
+
+      document.getElementById('formId').value = video.id;
+      document.getElementById('formTitle').value = video.title;
+      document.getElementById('formThumbnail').value = video.thumbnail;
+      document.getElementById('formGatewayUrl').value = video.gatewayUrl || getRandomTargetLink();
+      document.getElementById('formDownloadUrl').value = video.downloadUrl;
+
+      previewThumbnail(video.thumbnail);
+      document.getElementById('editModal').classList.remove('hidden');
+      document.getElementById('editModal').classList.add('flex');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.add('hidden');
+      document.getElementById('editModal').classList.remove('flex');
+    }
+
+    document.getElementById('videoForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = document.getElementById('formId').value;
+      const title = document.getElementById('formTitle').value;
+      const thumbnail = document.getElementById('formThumbnail').value;
+      const gatewayUrl = document.getElementById('formGatewayUrl').value;
+      const downloadUrl = document.getElementById('formDownloadUrl').value;
+
+      const idx = videos.findIndex(v => v.id === id);
+      if (idx !== -1) {
+        videos[idx] = { id, title, thumbnail, gatewayUrl, downloadUrl };
+        saveToStorage();
+        renderVideos();
+        closeEditModal();
+      }
+    });
+  </script>
+</body>
 </html>
